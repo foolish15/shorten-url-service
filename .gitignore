@@ -1,0 +1,8 @@
+tmp
+.env
+go.sum
+/output
+/public
+/web
+
+.vscode
