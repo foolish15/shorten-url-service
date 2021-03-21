@@ -11,11 +11,15 @@ SET `type` = 'scheme',
     
 REPLACE INTO `blocks`
 SET `type` = 'scheme',
-    `value` = 'line';
+    `value` = 'rtmp';
 
 REPLACE INTO `blocks`
 SET `type` = 'domain',
     `value` = 'blockdomain';
+
+REPLACE INTO `blocks`
+SET `type` = 'port',
+    `value` = '21';
 
 REPLACE INTO `blocks`
 SET `type` = 'regex',

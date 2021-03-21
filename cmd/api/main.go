@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/foolish15/shorten-url-service/internal/routes"
+	"github.com/foolish15/shorten-url-service/internal/routes/apiroute"
+	"github.com/foolish15/shorten-url-service/internal/routes/publicroute"
 	"github.com/foolish15/shorten-url-service/internal/schemas"
 	"github.com/foolish15/shorten-url-service/pkg/logrus/hook/writer"
 	"github.com/go-playground/validator/v10"
@@ -124,6 +126,7 @@ func main() {
 	e.Validator = &CustomValidator{validator: validate}
 	db := connectDB()
 	err := db.AutoMigrate(
+		schemas.AccessTransaction{},
 		schemas.Block{},
 		schemas.Link{},
 	)
@@ -148,7 +151,7 @@ func main() {
 		routes.MiddlewareRequestID(),
 		routes.MiddlewareBodyDump(),
 	)
-	// routes.Register(e, apiroute.Route{DB: db}, cmsroute.Route{DB: db})
+	routes.Register(e, apiroute.R{DB: db}, publicroute.R{DB: db})
 
 	defaultIP := "0.0.0.0"
 	ip := os.Getenv("SERVICE_IP")
