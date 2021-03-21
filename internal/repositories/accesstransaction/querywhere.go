@@ -1,4 +1,4 @@
-package link
+package accesstransaction
 
 import (
 	"github.com/foolish15/shorten-url-service/internal/repositories"

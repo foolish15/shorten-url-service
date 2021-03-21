@@ -7,7 +7,7 @@ import (
 func getHD() (*hashids.HashID, error) {
 	hd := hashids.NewData()
 	hd.Salt = "hashid pkg salt"
-	hd.MinLength = 32
+	hd.MinLength = 16
 	return hashids.NewWithData(hd)
 }
 

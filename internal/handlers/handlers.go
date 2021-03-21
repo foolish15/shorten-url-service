@@ -1,8 +1,14 @@
 package handlers
 
 import (
+	"encoding/json"
 	"mime/multipart"
 	"net/http"
+	"strings"
+	"time"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/sirupsen/logrus"
 )
 
 //ResponseStatus handler response statusssss
@@ -20,16 +26,109 @@ type ResponseMessage string
 
 //define standard message
 const (
-	ResponseMessageSuccess     ResponseMessage = "Success"
-	ResponseMessageOK          ResponseMessage = "OK"
-	ResponseMessageInvalidData ResponseMessage = "Invalid data"
+	ResponseMessageSuccess             ResponseMessage = "Success"
+	ResponseMessageOK                  ResponseMessage = "OK"
+	ResponseMessageInvalidData         ResponseMessage = "Invalid data"
+	ResponseMessageInternalServerError ResponseMessage = "Internal server error"
+	ResponseMessageNotfound            ResponseMessage = "Page not found"
 )
 
 //Response standard response
 type Response struct {
 	Status  ResponseStatus  `json:"status"`
 	Message ResponseMessage `json:"message"`
-	Data    interface{}     `json:"data"`
+	Data    interface{}     `json:"data,omitempty"`
+}
+
+type TypeTime time.Time
+
+func (t *TypeTime) UnmarshalParam(st string) error {
+	st = strings.TrimSpace(st)
+	if st == "" {
+		return nil
+	}
+	ti, err := time.ParseInLocation("2006-01-02 15:04:05", st, time.Local)
+	if err != nil {
+		return err
+	}
+	if err != nil {
+		return err
+	}
+	*t = TypeTime(ti)
+	return nil
+}
+
+//UnmarshalJSON  custom json unmarshal
+func (t *TypeTime) UnmarshalJSON(data []byte) error {
+	if data == nil {
+		return nil
+	}
+	st := strings.TrimSpace(strings.Trim(string(data), "\""))
+	if st == "" {
+		return nil
+	}
+
+	ti, err := time.ParseInLocation("2006-01-02 15:04:05", st, time.Local)
+	if err != nil {
+		return err
+	}
+	*t = TypeTime(ti)
+	return nil
+}
+
+//MarshalJSON  custom json unmarshal
+func (t *TypeTime) MarshalJSON() ([]byte, error) {
+	if t == nil {
+		return []byte("null"), nil
+	}
+
+	st := time.Time(*t).Format("2006-01-02 15:04:05")
+	return json.Marshal(st)
+}
+
+func ResponseInternalServerErrer(c ContextHandler, data interface{}) error {
+	return ResponseWithContext(c, http.StatusInternalServerError, ResponseStatusError, ResponseMessageInternalServerError, data)
+}
+
+func ResponseNotfound(c ContextHandler) error {
+	return ResponseWithContext(c, http.StatusNotFound, ResponseStatusFail, ResponseMessageNotfound, nil)
+}
+
+func ResponseInvalidData(c ContextHandler, data interface{}) error {
+	return ResponseWithContext(c, http.StatusUnprocessableEntity, ResponseStatusFail, ResponseMessageInvalidData, data)
+}
+
+func ResponseGone(c ContextHandler) error {
+	return ResponseWithContext(c, http.StatusGone, ResponseStatusFail, ResponseMessageInvalidData, nil)
+}
+
+func ResponseWithContext(c ContextHandler, httpStatus int, status ResponseStatus, msg ResponseMessage, data interface{}) error {
+	resp := Response{
+		Status:  status,
+		Message: msg,
+		Data:    data,
+	}
+	return c.JSON(httpStatus, resp)
+}
+
+func ErrorValidation(caller string, err error, c ContextHandler) error {
+	switch err := err.(type) {
+	case validator.ValidationErrors:
+		L(c).Debugf("[%s.ErrorValidation] c.Validate error: %+v", caller, err)
+		errs := []validator.FieldError(err)
+		dataE := []string{}
+		for _, ers := range errs {
+			dataE = append(dataE, ers.Error())
+		}
+		return ResponseWithContext(c, http.StatusUnprocessableEntity, ResponseStatusFail, ResponseMessageInvalidData, dataE)
+	default:
+		L(c).Errorf("[%s.ErrorValidation] c.Validate error: %+v", caller, err)
+		return ResponseWithContext(c, http.StatusInternalServerError, ResponseStatusError, ResponseMessageInternalServerError, nil)
+	}
+}
+
+func L(c ContextHandler) *logrus.Entry {
+	return logrus.WithContext(c.Request().Context())
 }
 
 //ContextHandler type context for handler
