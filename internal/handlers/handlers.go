@@ -2,11 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"mime/multipart"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
+	"github.com/foolish15/shorten-url-service/internal/services/tokenservice"
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 )
@@ -31,6 +34,8 @@ const (
 	ResponseMessageInvalidData         ResponseMessage = "Invalid data"
 	ResponseMessageInternalServerError ResponseMessage = "Internal server error"
 	ResponseMessageNotfound            ResponseMessage = "Page not found"
+	ResponseMessageInvalidJWT          ResponseMessage = "Invalid JWT"
+	ResponseMessageInvalidCredentail   ResponseMessage = "Invalid credential"
 )
 
 //Response standard response
@@ -102,6 +107,10 @@ func ResponseGone(c ContextHandler) error {
 	return ResponseWithContext(c, http.StatusGone, ResponseStatusFail, ResponseMessageInvalidData, nil)
 }
 
+func ResponseInvalidJWT(c ContextHandler) error {
+	return ResponseWithContext(c, http.StatusUnprocessableEntity, ResponseStatusFail, ResponseMessageInvalidJWT, nil)
+}
+
 func ResponseWithContext(c ContextHandler, httpStatus int, status ResponseStatus, msg ResponseMessage, data interface{}) error {
 	resp := Response{
 		Status:  status,
@@ -129,6 +138,20 @@ func ErrorValidation(caller string, err error, c ContextHandler) error {
 
 func L(c ContextHandler) *logrus.Entry {
 	return logrus.WithContext(c.Request().Context())
+}
+
+func UnpackToken(c ContextHandler) (*tokenservice.SystemClaims, error) {
+	tk, ok := c.Get("user").(*jwt.Token)
+	if !ok {
+		return nil, fmt.Errorf("user parse token error")
+	}
+
+	claims, ok := tk.Claims.(*tokenservice.SystemClaims)
+	if !ok {
+		return nil, fmt.Errorf("jwt parse system claims error")
+	}
+
+	return claims, nil
 }
 
 //ContextHandler type context for handler

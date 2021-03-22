@@ -6,13 +6,12 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/foolish15/shorten-url-service/internal/routes"
+	"github.com/foolish15/shorten-url-service/internal/routes/adminroute"
 	"github.com/foolish15/shorten-url-service/internal/routes/apiroute"
-	"github.com/foolish15/shorten-url-service/internal/routes/publicroute"
 	"github.com/foolish15/shorten-url-service/internal/schemas"
 	"github.com/foolish15/shorten-url-service/pkg/logrus/hook/writer"
 	"github.com/go-playground/validator/v10"
@@ -78,9 +77,7 @@ func connectDB() *gorm.DB {
 	for {
 		db, err := gorm.Open(
 			mysql.Open(connectString),
-			&gorm.Config{
-				SkipDefaultTransaction: true,
-			},
+			&gorm.Config{},
 		)
 
 		if err != nil {
@@ -102,24 +99,6 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 	return cv.validator.Struct(i)
 }
 
-//SkipJWT skip validate jwt for camp
-func SkipJWT(ec echo.Context) bool {
-	url := fmt.Sprintf("%s[%s]", ec.Request().RequestURI, ec.Request().Method)
-	re := regexp.MustCompile(`(?m)^\/api\/auth(.*)\[GET\]$`)
-	if len(re.FindStringIndex(url)) > 0 {
-		return true //skip validate jwt
-	}
-	re = regexp.MustCompile(`(?m)^\/api\/access_token(.*)\[GET\]$`)
-	if len(re.FindStringIndex(url)) > 0 {
-		return true //skip validate jwt
-	}
-	re = regexp.MustCompile(`(?m).(?:jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc|svg|woff|woff2|ttf)\[GET\]$`)
-	if len(re.FindStringIndex(url)) > 0 {
-		return true //skip validate jwt
-	}
-	return false //validate jwt
-}
-
 func main() {
 	e := echo.New()
 	validate := validator.New()
@@ -129,18 +108,19 @@ func main() {
 		schemas.AccessTransaction{},
 		schemas.Block{},
 		schemas.Link{},
+		schemas.Token{},
+		schemas.User{},
+		schemas.UserAuth{},
 	)
 	if err != nil {
 		logrus.Errorf("Auto migrate error: %+v", err)
 		os.Exit(1)
 	}
 
-	jwtSecret := os.Getenv("JWT_SECRET")
 	e.Use(
 		func(next echo.HandlerFunc) echo.HandlerFunc {
 			return func(ec echo.Context) error {
 				ec.Set("DB", db)
-				ec.Set("JWT_SECRET", jwtSecret)
 				return next(ec)
 			}
 		},
@@ -151,7 +131,10 @@ func main() {
 		routes.MiddlewareRequestID(),
 		routes.MiddlewareBodyDump(),
 	)
-	routes.Register(e, apiroute.R{DB: db}, publicroute.R{DB: db})
+	e.GET("/", func(c echo.Context) error {
+		return c.HTML(http.StatusOK, "")
+	})
+	routes.Register(e, apiroute.R{DB: db}, adminroute.R{DB: db})
 
 	defaultIP := "0.0.0.0"
 	ip := os.Getenv("SERVICE_IP")

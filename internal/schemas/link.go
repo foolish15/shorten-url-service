@@ -26,6 +26,6 @@ func (l *Link) AfterFind(tx *gorm.DB) (err error) {
 }
 
 func (l *Link) AfterUpdate(tx *gorm.DB) (err error) {
-	l.AccessURL = fmt.Sprintf("%s/p/%s", os.Getenv("APP_URL"), l.Code)
+	l.AccessURL = fmt.Sprintf("%s/link/%s", os.Getenv("APP_URL"), l.Code)
 	return
 }

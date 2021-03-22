@@ -1,8 +1,31 @@
 version: "3.5"
 services:
+
+  reverse-proxy:
+    image: traefik:v2.4
+    command: 
+      - --entryPoints.web.address=:80 
+      - --providers.file.directory=/conf.d
+    volumes:
+      - ./traefik.toml:/conf.d/traefik.toml
+    networks:
+      - shorten-url-network
+    ports:
+      - "80:80"
+      - "8080:8080"
+  go:
+    image: golang:1.16-alpine
+    networks:
+      - shorten-url-network
+    working_dir: /go/src/github.com/foolish15/shorten-url-service
+    volumes:
+      - ./:/go/src/github.com/foolish15/shorten-url-service
+    entrypoint: ["./air"]
   db:
     image: mysql:5.7
     command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_general_ci"]
+    networks:
+      - shorten-url-network
     ports:
       - 3306:3306
     environment:
@@ -13,3 +36,5 @@ services:
       - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
 volumes:
   db-data:
+networks:
+  shorten-url-network:
