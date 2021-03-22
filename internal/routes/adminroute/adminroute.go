@@ -5,15 +5,14 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/foolish15/shorten-url-service/internal/handlers"
 	"github.com/foolish15/shorten-url-service/internal/handlers/authhandler"
 	"github.com/foolish15/shorten-url-service/internal/handlers/linkhandler"
 	"github.com/foolish15/shorten-url-service/internal/handlers/userhandler"
-	"github.com/foolish15/shorten-url-service/internal/repositories/accesstransaction"
 	"github.com/foolish15/shorten-url-service/internal/repositories/link"
 	"github.com/foolish15/shorten-url-service/internal/repositories/token"
 	"github.com/foolish15/shorten-url-service/internal/repositories/user"
 	"github.com/foolish15/shorten-url-service/internal/repositories/userauth"
-	"github.com/foolish15/shorten-url-service/internal/services/acctxservice"
 	"github.com/foolish15/shorten-url-service/internal/services/authservice"
 	"github.com/foolish15/shorten-url-service/internal/services/registerservice"
 	"github.com/foolish15/shorten-url-service/internal/services/tokenservice"
@@ -74,10 +73,26 @@ func (r R) Route(e *echo.Echo) {
 	})
 
 	a.GET("/links", func(c echo.Context) error {
+		_, err := handlers.UnpackToken(c)
+		if err != nil {
+			handlers.L(c).Debugf("[/links]  handlers.UnpackToken error: %+v", err)
+			return handlers.ResponseInvalidJWT(c)
+		}
+
 		db := c.Get("DB").(*gorm.DB)
 		linkRepo := link.New(db)
-		accTxRepo := accesstransaction.New(db)
-		accTxSv := &acctxservice.S{}
-		return linkhandler.Redirect(c, linkRepo, accTxRepo, accTxSv)
+		return linkhandler.List(c, linkRepo)
+	})
+
+	a.DELETE("/links/:id", func(c echo.Context) error {
+		_, err := handlers.UnpackToken(c)
+		if err != nil {
+			handlers.L(c).Debugf("[/links]  handlers.UnpackToken error: %+v", err)
+			return handlers.ResponseInvalidJWT(c)
+		}
+
+		db := c.Get("DB").(*gorm.DB)
+		linkRepo := link.New(db)
+		return linkhandler.Delete(c, linkRepo)
 	})
 }

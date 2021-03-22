@@ -1,0 +1,13 @@
+# http routing section
+[http]
+  [http.routers]
+     # Define a connection between requests and services
+     [http.routers.to-whoami]
+      rule = "Host(`localhost`)"
+      service = "go-service"
+
+  [http.services]
+    # Define how to reach an existing service on our infrastructure
+    [http.services.go-service.loadBalancer]
+      [[http.services.go-service.loadBalancer.servers]]
+        url = "http://go"

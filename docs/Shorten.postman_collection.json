@@ -1,0 +1,466 @@
+{
+	"info": {
+		"_postman_id": "2a74cbc6-77b4-4ac1-b1af-5d90a8234d2b",
+		"name": "Shorten",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "API",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"url\":\"http://test/url/redirect\",\n    \"expire\": \"2024-01-01 12:00:00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/links",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"links"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Create",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "url",
+											"value": "http://test/url/target",
+											"type": "text"
+										},
+										{
+											"key": "expire",
+											"value": "2021-02-01 23:23:32",
+											"type": "text",
+											"disabled": true
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/api/links",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"links"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=UTF-8"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "X-Request-Id",
+									"value": "1616433774983988000-RdFndAozSBKZwMPoIuClCijsvDJjyDk1"
+								},
+								{
+									"key": "Date",
+									"value": "Mon, 22 Mar 2021 17:22:55 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "106"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"link\": \"http://test/url/target\",\n    \"expire\": 0,\n    \"hit\": 0,\n    \"accessUrl\": \"http://localhost/link/ZBp1LkP1yPGoyeDz\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"name last\",\n    \"email\": \"email@mail5.com\",\n    \"phone\": \"0888888889\",\n    \"authChannel\": \"password\",\n    \"authCredential\": {\n        \"password\": \"test\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/admin/register",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"admin",
+								"register"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Register",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"name last\",\n    \"email\": \"email@mail5.com\",\n    \"phone\": \"0888888889\",\n    \"authChannel\": \"password\",\n    \"authCredential\": {\n        \"password\": \"test\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/admin/register",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"admin",
+										"register"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=UTF-8"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "X-Request-Id",
+									"value": "1616434146402507000-Bo0MmPBGQd6VJMsJLEioeTPXjtwfotSr"
+								},
+								{
+									"key": "Date",
+									"value": "Mon, 22 Mar 2021 17:29:06 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "75"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": 1,\n    \"name\": \"name last\",\n    \"email\": \"email@mail5.com\",\n    \"phone\": \"0888888889\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Auth",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"ACCESS_TOKEN\", pm.response.json().access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"channel\": \"password\",\n    \"credential\": {\n        \"email\": \"email@mail5.com\",\n        \"password\": \"test\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/admin/auth",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"admin",
+								"auth"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Auth",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"channel\": \"password\",\n    \"credential\": {\n        \"email\": \"email@mail5.com\",\n        \"password\": \"test\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/admin/auth",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"admin",
+										"auth"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=UTF-8"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "X-Request-Id",
+									"value": "1616434305930155000-xt5xYnfZv3iahcIm2Wk3hxGtFt2Kwgb2"
+								},
+								{
+									"key": "Date",
+									"value": "Mon, 22 Mar 2021 17:31:46 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "322"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1Ijp7ImlkIjoxLCJuYW1lIjoibmFtZSBsYXN0IiwiZW1haWwiOiJlbWFpbEBtYWlsNS5jb20iLCJwaG9uZSI6IjA4ODg4ODg4ODkifSwiZXhwIjoxNjE2NDQ1MTA2LCJqdGkiOiIxIiwic3ViIjoidXNlciBjcmVkZW50aWFsIn0.NYNcthR28s_VFouPAQQ0Mrumgxxcb6yJzwQ6OA6XRnQ\",\n    \"expires_in\": 1616445106,\n    \"token_type\": \"bearer\"\n}"
+						}
+					]
+				},
+				{
+					"name": "List",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/admin/links?limit=1",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"admin",
+								"links"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "List",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/admin/links",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"admin",
+										"links"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1",
+											"disabled": true
+										},
+										{
+											"key": "limit",
+											"value": "1",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Length",
+									"value": "447"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=UTF-8"
+								},
+								{
+									"key": "Date",
+									"value": "Mon, 22 Mar 2021 19:54:09 GMT"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "X-Request-Id",
+									"value": "1616442849385764100-qfRYArXTMiVci7rvhfupnsgYHVhoFTKO"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"total\": 2,\n    \"perPage\": 200,\n    \"currentPage\": 1,\n    \"lastPage\": 1,\n    \"firstPageUrl\": \"http://localhost/admin/links?page=1\",\n    \"lastPageUrl\": \"http://localhost/admin/links?page=1\",\n    \"nextPageUrl\": null,\n    \"prevPageUrl\": null,\n    \"from\": 1,\n    \"to\": 2,\n    \"data\": [\n        {\n            \"link\": \"http://test/url/redirect\",\n            \"expire\": 1704085200,\n            \"hit\": 0,\n            \"accessUrl\": \"http://localhost/ZBp1LkP1yPGoyeDz\"\n        },\n        {\n            \"link\": \"http://test/url/redirect\",\n            \"expire\": 1704085200,\n            \"hit\": 1,\n            \"accessUrl\": \"http://localhost/ey8ZXJlwXP01vBA3\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/admin/links/1",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"admin",
+								"links",
+								"1"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Delete",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/admin/links/2",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"admin",
+										"links",
+										"2"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=UTF-8"
+								},
+								{
+									"key": "Date",
+									"value": "Mon, 22 Mar 2021 20:11:19 GMT"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin"
+								},
+								{
+									"key": "X-Request-Id",
+									"value": "1616443879015768000-MkIxitFGiZoCXw2WXVsT6kfikoPpMmqQ"
+								}
+							],
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			]
+		}
+	]
+}

@@ -5,12 +5,15 @@ import (
 	"time"
 
 	"github.com/foolish15/shorten-url-service/internal/handlers"
+	"github.com/foolish15/shorten-url-service/internal/repositories"
 	"github.com/foolish15/shorten-url-service/internal/repositories/accesstransaction"
 	"github.com/foolish15/shorten-url-service/internal/repositories/block"
 	"github.com/foolish15/shorten-url-service/internal/repositories/link"
+	"github.com/foolish15/shorten-url-service/internal/schemas"
 	"github.com/foolish15/shorten-url-service/internal/services/acctxservice"
 	"github.com/foolish15/shorten-url-service/internal/services/blockservice"
 	"github.com/foolish15/shorten-url-service/internal/services/linkservice"
+	"github.com/foolish15/shorten-url-service/pkg/paging"
 )
 
 type reqCreate struct {
@@ -20,6 +23,15 @@ type reqCreate struct {
 
 type reqRedirect struct {
 	Code string `param:"code"`
+}
+
+type reqList struct {
+	Page  int `query:"page"`
+	Limit int `query:"limit"`
+}
+
+type reqDelete struct {
+	ID uint `param:"id"`
 }
 
 func Create(c handlers.ContextHandler, linkRepo link.Repository, blockRepo block.Repository, blockSv blockservice.I, linkSv linkservice.I) error {
@@ -102,4 +114,59 @@ func Redirect(c handlers.ContextHandler, linkRepo link.Repository, accTxRepo acc
 	}
 
 	return c.Redirect(http.StatusFound, lnk.Link)
+}
+
+func List(c handlers.ContextHandler, linkRepo link.Repository) error {
+	req := reqList{}
+	err := c.Bind(&req)
+	if err != nil {
+		handlers.L(c).Debugf("[linkhandler.List] c.Bind error: %+v", err)
+		return handlers.ResponseInvalidData(c, "Invalid input")
+	}
+	if req.Page == 0 {
+		req.Page = 1
+	}
+	if req.Limit == 0 {
+		req.Limit = 200
+	}
+
+	count, err := linkRepo.Count()
+	if err != nil {
+		handlers.L(c).Errorf("[linkhandler.List] count product error: %+v", err)
+		return handlers.ResponseInternalServerErrer(c, nil)
+	}
+
+	var data []schemas.Link
+	if count == 0 {
+		data = []schemas.Link{}
+	} else {
+		data, err = linkRepo.Find(repositories.LimitPage{Page: req.Page, Limit: req.Limit})
+		if err != nil {
+			handlers.L(c).Errorf("[ProductHandler.List] find products error: %+v", err)
+			return handlers.ResponseInternalServerErrer(c, nil)
+		}
+	}
+
+	resp := paging.Pack(c.Request().URL, req.Page, req.Limit, (req.Page-1)*req.Limit, int(count), data)
+	return c.JSON(http.StatusOK, resp)
+}
+
+func Delete(c handlers.ContextHandler, linkRepo link.Repository) error {
+	req := reqDelete{}
+	err := c.Bind(&req)
+	if err != nil {
+		handlers.L(c).Debugf("[linkhandler.Delete] c.Bind error: %+v", err)
+		return handlers.ResponseInvalidData(c, "Invalid input")
+	}
+
+	err = linkRepo.Delete(req.ID)
+	if err != nil {
+		if err == link.ErrNotFound {
+			return handlers.ResponseNotfound(c)
+		}
+		handlers.L(c).Errorf("[linkhandler.Delete] linkRepo.Delete error: %+v", err)
+		return handlers.ResponseInternalServerErrer(c, "Delete failed")
+	}
+
+	return c.JSON(http.StatusNoContent, nil)
 }

@@ -77,9 +77,7 @@ func connectDB() *gorm.DB {
 	for {
 		db, err := gorm.Open(
 			mysql.Open(connectString),
-			&gorm.Config{
-				SkipDefaultTransaction: true,
-			},
+			&gorm.Config{},
 		)
 
 		if err != nil {
@@ -133,6 +131,9 @@ func main() {
 		routes.MiddlewareRequestID(),
 		routes.MiddlewareBodyDump(),
 	)
+	e.GET("/", func(c echo.Context) error {
+		return c.HTML(http.StatusOK, "")
+	})
 	routes.Register(e, apiroute.R{DB: db}, adminroute.R{DB: db})
 
 	defaultIP := "0.0.0.0"
